@@ -43,6 +43,51 @@ function getEmptyBarChartInstance(elementId){
 }
 
 
+
+function changeActiveStatusByUniversityName(list,name,status){
+
+    if(status){
+        for(i in list){
+            if(list[i].isActive === true){
+                list[i].isActive = false
+            }
+        }
+        for(i in list){
+
+            if(list[i].name === name){
+                console.log(list[i])
+                list[i].isActive = status
+                console.log(list[i])
+            }
+        }
+    }
+}
+
+
+
+//将对象参数转换为url参数
+var _paramsEncode = function(param, key, encode) {
+    if(param == null) return '';
+    var paramStr = '';
+    var t = typeof (param);
+    if (t == 'string' || t == 'number' || t == 'boolean') {
+        paramStr += '&' + key + '=' + ((encode==null||encode) ? encodeURIComponent(param) : param);
+    } else {
+        for (let i in param) {
+        let k = key == null ? i : key + (param instanceof Array ? '[' + i + ']' : '.' + i);
+        paramStr += _paramsEncode(param[i], k, encode);
+        }
+    }
+    return paramStr;
+};
+
+var paramsEndoce = function(param, key, encode) {
+    return "?" + _paramsEncode(param, key, encode).substr(1)
+}
+
+
+
+
 //侧边栏的Vue实例
 var sideListApp = new Vue({
     el:"#sideBar",
@@ -261,34 +306,8 @@ var formApp = new Vue({
         onSubmit() {
             paginationApp.search();
         },
-        initSettings(){
-            // this.formInline.classification = '~';
-            // this.formInline.sentiment = '~';
-            // paginationApp.search();
-        }
     }
 });
-
-
-
-function changeActiveStatusByUniversityName(list,name,status){
-
-    if(status){
-        for(i in list){
-            if(list[i].isActive === true){
-                list[i].isActive = false
-            }
-        }
-        for(i in list){
-
-            if(list[i].name === name){
-                console.log(list[i])
-                list[i].isActive = status
-                console.log(list[i])
-            }
-        }
-    }
-}
 
 
 
@@ -523,9 +542,33 @@ var chartsApp = new Vue({
 
         createSentimentMediaRankChart(){
             var _self = this;
-            var postiveMediaRankChart = getEmptyBarChartInstance('postiveMediaRank');
+            var posMediaRankChart = getEmptyBarChartInstance('posMediaRank');
             var neuMediaRankChart = getEmptyBarChartInstance('neuMediaRank');
             var negMediaRankChart = getEmptyBarChartInstance('negMediaRank');
+            posMediaRankChart.on('click', function(params){
+                var targetParams = {
+                    "media": params.name,
+                    "Uname": sideListApp.currentUniversity,
+                    "sentiment": "1"
+                }
+                location.href = location.origin + "/report_detail" + paramsEndoce(targetParams)
+            })
+            neuMediaRankChart.on('click', function(params){
+                var targetParams = {
+                    "media": params.name,
+                    "Uname": sideListApp.currentUniversity,
+                    "sentiment": "0"
+                }
+                location.href = location.origin + "/report_detail" + paramsEndoce(targetParams)
+            })
+            negMediaRankChart.on('click', function(params){
+                var targetParams = {
+                    "media": params.name,
+                    "Uname": sideListApp.currentUniversity,
+                    "sentiment": "-1"
+                }
+                location.href = location.origin + "/report_detail" + paramsEndoce(targetParams)
+            })
             axios({
                 method: 'get',
                 url: '/api/sentimentrank',
@@ -533,11 +576,9 @@ var chartsApp = new Vue({
                 	"Content-type":"application/json"
 				},
                 params:{
-
-                        "Uname":universityTitleApp.title,
-						"sentiment":"1",
-						"limit":5
-
+                    "Uname":universityTitleApp.title,
+					"sentiment":"1",
+					"limit":5
                 }
             }).then(function(res){
 				var mediaList = [];
@@ -547,7 +588,7 @@ var chartsApp = new Vue({
                 	mediaList.push(res.data[i]["_id"]);
                 	mediaTotalList.push(res.data[i]["total"]);
 				}
-                postiveMediaRankChart.setOption({
+                posMediaRankChart.setOption({
                     color: ['#66CD00'],
                     title:{
                         text:'报道正面新闻的媒体排名',
@@ -584,11 +625,9 @@ var chartsApp = new Vue({
                     "Content-type":"application/json"
                 },
                 params:{
-
                     "Uname":universityTitleApp.title,
                     "sentiment":"0",
                     "limit":5
-
                 }
             }).then(function(res){
                 var mediaList = [];
@@ -635,11 +674,9 @@ var chartsApp = new Vue({
                     "Content-type":"application/json"
                 },
                 params:{
-
                     "Uname":universityTitleApp.title,
                     "sentiment":"-1",
                     "limit":5
-
                 }
             }).then(function(res){
                 var mediaList = [];
@@ -682,6 +719,15 @@ var chartsApp = new Vue({
         createMediaInfluenceRank(){
             var _self = this;
             var mediaInfluenceRankChart = getEmptyBarChartInstance('mediaInfluenceRank');
+            
+            mediaInfluenceRankChart.on('click', function(params){
+                var targetParams = {
+                    "media": params.name,
+                    "Uname": sideListApp.currentUniversity,
+                    "sentiment": "~"
+                }
+                location.href = location.origin + "/report_detail" + paramsEndoce(targetParams)
+            })
 
             axios({
                 method: 'get',
@@ -791,6 +837,14 @@ var mediaChartsApp = new Vue({
         createTotalUniversityRankChart(){
             var _self = this;
             var totalUniversityRankChart = getEmptyBarChartInstance('totalUniversityRank');
+            totalUniversityRankChart.on('click', function(params){
+                var targetParams = {
+                    "media": editableSelectApp.currentMedia,
+                    "Uname": params.name,
+                    "sentiment": "~"
+                }
+                location.href = location.origin + "/report_detail" + paramsEndoce(targetParams)
+            })
 
             axios({
                 method: 'get',
@@ -805,17 +859,24 @@ var mediaChartsApp = new Vue({
             }).then(function(res){
                 var universityList = [];
                 var reportCountList = [];
+                var titleLink = location.origin + "/report_detail" + paramsEndoce({
+                    "media": editableSelectApp.currentMedia,
+                    "Uname": "上海海事大学",
+                    "sentiment": "~"
+                });
 
                 for(var i = 0; i < res.data.length;i++){
                     universityList.push(res.data[i]["_id"]);
                     reportCountList.push(res.data[i]["total"]);
                 }
+                
                 totalUniversityRankChart.setOption({
                     title:{
                         x:"center",
                         textStyle:{
                             color:"#ff6600"
-                        }
+                        },
+                        link: [titleLink]
                     },
                     xAxis : [
                         {
@@ -865,6 +926,30 @@ var mediaChartsApp = new Vue({
             var posUniversityRankChart = getEmptyBarChartInstance('posUniversityRank');
             var neuUniversityRankChart = getEmptyBarChartInstance('neuUniversityRank');
             var negUniversityRankChart = getEmptyBarChartInstance('negUniversityRank');
+            posUniversityRankChart.on('click', function(params){
+                var targetParams = {
+                    "media": editableSelectApp.currentMedia,
+                    "Uname": params.name,
+                    "sentiment": "1"
+                }
+                location.href = location.origin + "/report_detail" + paramsEndoce(targetParams)
+            })
+            neuUniversityRankChart.on('click', function(params){
+                var targetParams = {
+                    "media": editableSelectApp.currentMedia,
+                    "Uname": params.name,
+                    "sentiment": "0"
+                }
+                location.href = location.origin + "/report_detail" + paramsEndoce(targetParams)
+            })
+            negUniversityRankChart.on('click', function(params){
+                var targetParams = {
+                    "media": editableSelectApp.currentMedia,
+                    "Uname": params.name,
+                    "sentiment": "-1"
+                }
+                location.href = location.origin + "/report_detail" + paramsEndoce(targetParams)
+            })
 
             // positive
             axios({
@@ -881,6 +966,11 @@ var mediaChartsApp = new Vue({
             }).then(function(res){
                 var universityList = [];
                 var positiveCountList = [];
+                var titleLink = location.origin + "/report_detail" + paramsEndoce({
+                    "media": editableSelectApp.currentMedia,
+                    "Uname": "上海海事大学",
+                    "sentiment": "1"
+                });
 
                 for(var i = 0; i < res.data.length;i++){
                     universityList.push(res.data[i]["_id"]);
@@ -892,7 +982,8 @@ var mediaChartsApp = new Vue({
                         x:"center",
                         textStyle:{
                             color:"#FF6600"
-                        }
+                        },
+                        link: [titleLink]
                     },
                     xAxis : [
                         {
@@ -951,6 +1042,11 @@ var mediaChartsApp = new Vue({
             }).then(function(res){
                 var universityList = [];
                 var neutralCountList = [];
+                var titleLink = location.origin + "/report_detail" + paramsEndoce({
+                    "media": editableSelectApp.currentMedia,
+                    "Uname": "上海海事大学",
+                    "sentiment": "0"
+                });
 
                 for(var i = 0; i < res.data.length;i++){
                     universityList.push(res.data[i]["_id"]);
@@ -962,7 +1058,8 @@ var mediaChartsApp = new Vue({
                         x:"center",
                         textStyle:{
                             color:"#FF6600"
-                        }
+                        },
+                        link: [titleLink]
                     },
                     xAxis : [
                         {
@@ -1021,6 +1118,11 @@ var mediaChartsApp = new Vue({
             }).then(function(res){
                 var universityList = [];
                 var negativeCountList = [];
+                var titleLink = location.origin + "/report_detail" + paramsEndoce({
+                    "media": editableSelectApp.currentMedia,
+                    "Uname": "上海海事大学",
+                    "sentiment": "-1"
+                });
 
                 for(var i = 0; i < res.data.length;i++){
                     universityList.push(res.data[i]["_id"]);
@@ -1032,7 +1134,8 @@ var mediaChartsApp = new Vue({
                         x:"center",
                         textStyle:{
                             color:"#FF6600"
-                        }
+                        },
+                        link: [titleLink]
                     },
                     xAxis : [
                         {
