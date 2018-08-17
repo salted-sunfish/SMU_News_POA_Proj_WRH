@@ -65,7 +65,7 @@ def predict_news_category(text):
     # 训练集对应的标签
     categories = category_config["categories"]
 
-    news_category_tfidf = get_tfidf_model(text,count_vect_path=count_vetc_path,tfidf_path=tfidf_path)
+    news_category_tfidf = get_tfidf_model([text],count_vect_path=count_vetc_path,tfidf_path=tfidf_path)
 
     clf = joblib.load(category_config["save_model_path"])
     result = clf.predict(news_category_tfidf)
@@ -75,18 +75,63 @@ def predict_news_category(text):
     return predicted_result
 
 
+def predict_news_category_proba(text):
+
+    count_vetc_path = category_config["count_vect_path"]
+    tfidf_path = category_config["tfidf_path"]
+
+    # 训练集对应的标签
+    categories = category_config["categories"]
+
+    news_category_tfidf = get_tfidf_model([text],count_vect_path=count_vetc_path,tfidf_path=tfidf_path)
+
+    clf = joblib.load(category_config["save_model_path"])
+    result = clf.predict_proba(news_category_tfidf)
+
+    return result
+
 
 
 
 if __name__ == '__main__':
 
-    print("开始训练模型")
+    # print("开始训练模型")
 
-    train_data = get_dataset_bunch()
-    X_train_tfidf = build_tfidf_model(train_data)
-    clf = train_news_category_model(X_train_tfidf,train_data)
+    # train_data = get_dataset_bunch()
+    # print(train_data.target_names)
+    # X_train_tfidf = build_tfidf_model(train_data)
+    # clf = train_news_category_model(X_train_tfidf,train_data)
 
-    result = predict_news_category("2017上海海事大学研究生入学考试简章")
+    result = predict_news_category("学术论坛")
     print(result)
+
+    ################################################################
+    # # 判断准确率
+    ################################################################
+    # correct = 0
+    # wrong = 0
+
+    # dirname = "dataset_test/news_category_dataset/"
+    # for d2 in os.listdir(dirname):
+    #     d2 = dirname + d2 + "/"
+    #     for sub_file in os.listdir(d2):
+    #         sub_file = d2 + sub_file
+    #         with open(sub_file, "r") as f:
+    #             line = f.readline().strip().replace(" ", "")
+    #             res = predict_news_category(line)
+    #             real_res = ""
+    #             for category in ["activity", "entrance", "social", "study"]:
+    #                 if category in d2:
+    #                     real_res = category
+    #                     break
+    #             if res in real_res:
+    #                 correct += 1
+    #             else:
+    #                 wrong += 1
+    # print(correct/(correct+wrong))
+    ################################################################
+
+
+    
 
 

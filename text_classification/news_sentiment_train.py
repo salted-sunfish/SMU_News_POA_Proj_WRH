@@ -49,7 +49,8 @@ def build_tfidf_model(train_data):
 
 def train_news_sentiment_model(X_train_tfidf,train_data):
 
-    clf = MultinomialNB(alpha=0.1).fit(X_train_tfidf,train_data.target)
+    clf = MultinomialNB(alpha=0.01)
+    clf = clf.fit(X_train_tfidf,train_data.target)
     print("分类器训练完毕")
     joblib.dump(clf, category_config["save_model_path"])
     print("训练模型保存成功")
@@ -65,7 +66,7 @@ def predict_news_sentiment(text):
     # 训练集对应的标签
     categories = category_config["categories"]
 
-    news_sentiment_tfidf = get_tfidf_model(text,count_vect_path=count_vetc_path,tfidf_path=tfidf_path)
+    news_sentiment_tfidf = get_tfidf_model([text],count_vect_path=count_vetc_path,tfidf_path=tfidf_path)
 
     clf = joblib.load(category_config["save_model_path"])
     result = clf.predict(news_sentiment_tfidf)
@@ -75,18 +76,60 @@ def predict_news_sentiment(text):
     return predicted_result
 
 
+def predict_news_sentiment_proba(text):
+
+    count_vetc_path = category_config["count_vect_path"]
+    tfidf_path = category_config["tfidf_path"]
+
+    # 训练集对应的标签
+    categories = category_config["categories"]
+
+    news_sentiment_tfidf = get_tfidf_model([text],count_vect_path=count_vetc_path,tfidf_path=tfidf_path)
+
+    clf = joblib.load(category_config["save_model_path"])
+    result = clf.predict_proba(news_sentiment_tfidf)
+
+    return result
 
 
 
 if __name__ == '__main__':
 
-    print("开始训练模型")
+    # print("开始训练模型")
 
-    train_data = get_dataset_bunch()
-    X_train_tfidf = build_tfidf_model(train_data)
-    clf = train_news_sentiment_model(X_train_tfidf,train_data)
+    # train_data = get_dataset_bunch()
+    # X_train_tfidf = build_tfidf_model(train_data)
+    # clf = train_news_sentiment_model(X_train_tfidf,train_data)
 
-    result = predict_news_sentiment("2017上海海事大学研究生入学考试简章")
+    result = predict_news_sentiment("考生作弊被开除学籍")
     print(result)
+
+    ################################################################
+    # # 判断准确率
+    ################################################################
+    # correct = 0
+    # wrong = 0
+
+    # dirname = "dataset_test/news_sentiment_dataset/"
+    # for d2 in os.listdir(dirname):
+    #     d2 = dirname + d2 + "/"
+    #     for sub_file in os.listdir(d2):
+    #         sub_file = d2 + sub_file
+    #         with open(sub_file, "r") as f:
+    #             line = f.readline().strip().replace(" ", "")
+    #             res = predict_news_sentiment(line)
+    #             real_res = ""
+    #             for category in ["/-1", "/0", "/1"]:
+    #                 if category in d2:
+    #                     real_res = category
+    #                     break
+    #             print(predict_news_sentiment_proba(line))
+    #             print("real=" + real_res + "," + "res=" + res)
+    #             if res in real_res:
+    #                 correct += 1
+    #             else:
+    #                 wrong += 1
+    # print(correct/(correct+wrong))
+    ################################################################
 
 

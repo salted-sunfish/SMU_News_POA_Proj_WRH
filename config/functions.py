@@ -64,18 +64,18 @@ def write_bunch_obj(path,bunchobj):
 
 def seg_chinese_text(text):
 
-    str = text.strip().replace("\r\n","").strip()
-    text_seg = " ".join(jieba.cut(str))
+    _str = text.strip().replace("\r\n","").strip()
+    text_seg = " ".join(jieba.cut(_str))
 
     return text_seg
 
 
-def get_tfidf_model(text,count_vect_path,tfidf_path):
-
-    seg_text = seg_chinese_text(text)
+def get_tfidf_model(texts,count_vect_path,tfidf_path):
 
     docs = []
-    docs.append(seg_text)
+    for text in texts:
+        seg_text = seg_chinese_text(text)
+        docs.append(seg_text)
 
     count_vect = read_bunch_obj(count_vect_path)
     tfidf_transformer = read_bunch_obj(tfidf_path)
