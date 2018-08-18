@@ -18,3 +18,9 @@
 4. 然后还有一些小细节的地方作了修改。。。也不是很记得了，应该不重要
 5. text_classification/not_used文件夹 存放了一些不用的东西，但是我想放着，也许以后要参考.
 6. 模型(text_classification/models)和数据(text_classification/dataset以及text_classification/dataset_test)太大了，我就先删了.
+
+
+2018-8-19更新：
+1. 由于模型比较大，每次预测将其导入内存需要大量时间，所以改写了web/python/online_analyze.py，让模型一直放在内存里，并通过socket来实现交互.
+2. 下载后在web/python/下运行"python create_link.py"创建text_classification/models的硬链接.
+3. 启动服务器时，需要手动在web/python/下运行"python online_analyze.py"直至其输出"socket on!".
