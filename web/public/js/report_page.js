@@ -200,7 +200,6 @@ var sideListApp = new Vue({
             changeActiveStatusByUniversityName(this.universityList,universityName,true);
             this.currentUniversity = universityName;
             universityTitleApp.initTitle(this.currentUniversity);//初始化标题幕布
-            formApp.initSettings();//初始化搜索框设置
             chartsApp.initCharts();//初始化图表数据
         }
     },
@@ -291,23 +290,6 @@ var newsListApp = new Vue({
         }
     }
 })
-
-
-//搜索条件的表单Vue实例
-var formApp = new Vue({
-    el:"#formApp",
-    data:{
-        formInline:{
-            classification:'~',
-            sentiment:'~'
-        }
-    },
-    methods: {
-        onSubmit() {
-            paginationApp.search();
-        },
-    }
-});
 
 
 
