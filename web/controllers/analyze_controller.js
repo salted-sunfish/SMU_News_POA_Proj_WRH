@@ -30,6 +30,10 @@ exports.doTextAnalyze = function(req,res){
         client.write(req.body.text);
     });
 
+    client.on('error', function(err){
+        console.error(err);
+    })
+
     client.on('data', function(data){
         var obj = JSON.parse(data)
         var classificationDict = {
